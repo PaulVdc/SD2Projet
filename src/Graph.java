@@ -14,6 +14,7 @@ public class Graph {
 
     public Graph(String artists, String mentions) {
         this.artists = new HashMap<>();
+        this.mentions = new HashMap<>();
         this.artistsMentionnes = new HashMap<>();
 
 
@@ -29,13 +30,34 @@ public class Graph {
                     // Création de l'objet Artist
                     Artist artiste = new Artist(id, nom, categorie);
 
-                    System.out.println(artiste);
+                    //System.out.println(artiste); //Pour verifier si l'ajout s'est bien passé
                     this.artists.put(artiste.getId_artist(), artiste);
                 }
             }
-        }catch (IOException e){
+        } catch (IOException e){
             e.printStackTrace();
         }
+
+        try(BufferedReader br = new BufferedReader(new FileReader(mentions))){
+            String ligne;
+            while ((ligne = br.readLine()) != null) {
+                String[] elements = ligne.split(","); // Séparer les champs par ","
+                if (elements.length == 3) { // Vérification du bon format
+                    int id = Integer.parseInt(elements[0].trim()); // Convertir l’ID en int
+                    String nom = elements[1].trim();
+                    String categorie = elements[2].trim();
+
+                    // Création de l'objet Artist
+                    Artist artiste = new Artist(id, nom, categorie);
+
+                    //System.out.println(artiste); //Pour verifier si l'ajout s'est bien passé
+                    this.artists.put(artiste.getId_artist(), artiste);
+                }
+            }
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+
 
     }
 

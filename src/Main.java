@@ -5,6 +5,5 @@ public class Main {
 		System.out.println("--------------------------");
 
         graph.trouverCheminMaxMentions("The Beatles", "Kendji Girac");
-
     }
 }
