@@ -7,8 +7,8 @@ import java.util.Map;
 
 public class Graph {
 
-    private static Map<Integer, Artist> artists;
-    private static Map<Integer, List<Artist>> mentions;
+    private static Map<Integer, Artist> artists;// retient tout les artistes
+    private static Map<Integer, Mention> mentions;//TODO à retirer ??
 
     private Map<Artist, Map<Integer, Artist>> artistsMentionnes;//Liste d'adjacence
 
@@ -43,15 +43,17 @@ public class Graph {
             while ((ligne = br.readLine()) != null) {
                 String[] elements = ligne.split(","); // Séparer les champs par ","
                 if (elements.length == 3) { // Vérification du bon format
-                    int id = Integer.parseInt(elements[0].trim()); // Convertir l’ID en int
-                    String nom = elements[1].trim();
-                    String categorie = elements[2].trim();
+                    int id_mentionneur = Integer.parseInt(elements[0].trim()); // Convertir l’ID en int
+                    int id_mentionne = Integer.parseInt(elements[1].trim());
+                    int nb_mention = Integer.parseInt(elements[2].trim());
 
-                    // Création de l'objet Artist
-                    Artist artiste = new Artist(id, nom, categorie);
 
-                    //System.out.println(artiste); //Pour verifier si l'ajout s'est bien passé
-                    this.artists.put(artiste.getId_artist(), artiste);
+                    // Création de l'objet Mention
+                    Mention mention = new Mention(this.artists.get(id_mentionneur), this.artists.get(id_mentionne), nb_mention);
+
+                    System.out.println(mention); //Pour verifier si l'ajout s'est bien passé
+                    //TODO ajouter la mention à this.mentions
+
                 }
             }
         } catch (IOException e){
