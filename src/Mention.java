@@ -5,7 +5,7 @@ public class Mention {
     private Artist artiste_mentionne;
     private double nb_mentions;
 
-    public Mention(Artist artiste_mentionneur, Artist artiste_mentionne, Integer nb_mentions) {
+    public Mention(Artist artiste_mentionneur, Artist artiste_mentionne, double nb_mentions) {
         this.artiste_mentionneur = artiste_mentionneur;
         this.artiste_mentionne = artiste_mentionne;
         this.nb_mentions = 1.0 /nb_mentions;
