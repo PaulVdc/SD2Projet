@@ -80,20 +80,30 @@ public class Graph {
         Artist end = this.artists.get(artiste2);
         Queue<Artist> fileSommets = new LinkedList<>();
         Set<Artist> visited = new HashSet<>();
+        Artist artisteCourant = start;
+
 
         fileSommets.add(start);
         visited.add(start);
-        if(mentions.containsKey(start.getId_artist())){
+        /*if(mentions.containsKey(start.getId_artist())){
             fileSommets.add(mentions.get(start.getId_artist()).getArtiste_mentionne());
             System.out.println(fileSommets.toString());
 
+        }*/
+        while(!artisteCourant.equals(end)) {
+            // je oprend  le premier de la fileet je l'enleve et il devient mon courant
+
+            // Créer une 3ème structure pour retenir d'ou les sommets viennent ( Faire une map <Artiste_Mentionné,Mentions> )
+
+            for (Artist artist : artistsMentionnes.get(artisteCourant)) {
+                if(!visited.contains(artisteCourant)){
+                    visited.add(artist);
+                    fileSommets.add(artist);
+                }
+            }
+            artisteCourant = fileSommets.remove();
         }
-        for (Artist artist : artistsMentionnes.get(start)) {
-            visited.add(artist);
-            fileSommets.add(artist);
-            trouverCheminLePlusCourt(artist.getNom_artist(),artiste2);
-        }
-        
+
     }
 
     public void trouverCheminMaxMentions(String artiste1, String artiste2){
