@@ -13,7 +13,7 @@ import java.util.Set;
 
 public class Graph {
 
-    /*private static Map<Integer, Artist> artists;*/// retient tout les artistes
+    private static Map<Integer, Artist> artistsIds;// retient tout les artistes
     private static Map<String, Artist> artists;// retient tout les artistes avec le nom comme clé// retient tout les artistes par leur nom
     private static Map<Integer, Mention> mentions;//TODO à retirer ??
 
@@ -21,6 +21,7 @@ public class Graph {
 
     public Graph(String artists, String mentions) {
         this.artists = new HashMap<>();
+        this.artistsIds = new HashMap<>();
         this.mentions = new HashMap<>();
         this.artistsMentionnes = new HashMap<>();
 
@@ -38,7 +39,7 @@ public class Graph {
                     Artist artiste = new Artist(id, nom, categorie);
 
                     //System.out.println(artiste); //Pour verifier si l'ajout s'est bien passé
-                    /*this.artists.put(artiste.getId_artist(), artiste);*/
+                    this.artistsIds.put(artiste.getId_artist(), artiste);
                     this.artists.put(artiste.getNom_artist(), artiste);
                 }
             }
@@ -57,9 +58,10 @@ public class Graph {
 
 
                     // Création de l'objet Mention
-                    Mention mention = new Mention(this.artists.get(id_mentionneur), this.artists.get(id_mentionne), nb_mention);
+                    Mention mention = new Mention(this.artistsIds.get(id_mentionneur), this.artistsIds.get(id_mentionne), nb_mention);
                     System.out.println(mention);
                     this.mentions.put(mention.getArtiste_mentionne().getId_artist(),mention);
+
                    /* System.out.println(mention);*/ //Pour verifier si l'ajout s'est bien passé
                     //TODO ajouter la mention à this.mentions
 
@@ -80,7 +82,6 @@ public class Graph {
         Set<Artist> visited = new HashSet<>();
 
         queue.add(start);
-        System.out.println(mentions);
         visited.add(start);
         if(mentions.containsKey(start.getId_artist())){
             queue.add(mentions.get(start.getId_artist()).getArtiste_mentionne());
