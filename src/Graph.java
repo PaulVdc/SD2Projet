@@ -17,7 +17,7 @@ public class Graph {
     private static Map<String, Artist> artists;// retient tout les artistes avec le nom comme clé// retient tout les artistes par leur nom
     private static Map<Integer, Mention> mentions;//TODO à retirer ??
 
-    private Map<Artist, Map<Integer, Artist>> artistsMentionnes;//Liste d'adjacence
+    private Map<Artist, Set<Artist>> artistsMentionnes;//Liste d'adjacence
 
     public Graph(String artists, String mentions) {
         this.artists = new HashMap<>();
@@ -78,16 +78,22 @@ public class Graph {
     public void trouverCheminLePlusCourt(String artiste1, String artiste2) {
         Artist start = this.artists.get(artiste1);
         Artist end = this.artists.get(artiste2);
-        Queue<Artist> queue = new LinkedList<>();
+        Queue<Artist> fileSommets = new LinkedList<>();
         Set<Artist> visited = new HashSet<>();
 
-        queue.add(start);
+        fileSommets.add(start);
         visited.add(start);
         if(mentions.containsKey(start.getId_artist())){
-            queue.add(mentions.get(start.getId_artist()).getArtiste_mentionne());
-            System.out.println(queue.toString());
+            fileSommets.add(mentions.get(start.getId_artist()).getArtiste_mentionne());
+            System.out.println(fileSommets.toString());
 
         }
+        for (Artist artist : artistsMentionnes.get(start)) {
+            visited.add(artist);
+            fileSommets.add(artist);
+            trouverCheminLePlusCourt(artist.getNom_artist(),artiste2);
+        }
+        
     }
 
     public void trouverCheminMaxMentions(String artiste1, String artiste2){
