@@ -1,10 +1,15 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 
 public class Graph {
 
@@ -53,7 +58,8 @@ public class Graph {
 
                     // Création de l'objet Mention
                     Mention mention = new Mention(this.artists.get(id_mentionneur), this.artists.get(id_mentionne), nb_mention);
-
+                    System.out.println(mention);
+                    this.mentions.put(mention.getArtiste_mentionne().getId_artist(),mention);
                    /* System.out.println(mention);*/ //Pour verifier si l'ajout s'est bien passé
                     //TODO ajouter la mention à this.mentions
 
@@ -67,14 +73,24 @@ public class Graph {
     }
 
     //methodes
-    public Object trouverCheminLePlusCourt(String artiste1, String artiste2){
+    public void trouverCheminLePlusCourt(String artiste1, String artiste2) {
         Artist start = this.artists.get(artiste1);
         Artist end = this.artists.get(artiste2);
-        System.out.println(start.toString() + end.toString());
-        return null;
+        Queue<Artist> queue = new LinkedList<>();
+        Set<Artist> visited = new HashSet<>();
+
+        queue.add(start);
+        System.out.println(mentions);
+        visited.add(start);
+        if(mentions.containsKey(start.getId_artist())){
+            queue.add(mentions.get(start.getId_artist()).getArtiste_mentionne());
+            System.out.println(queue.toString());
+
+        }
     }
 
-    public Object trouverCheminMaxMentions(String artiste1, String artiste2){
-        return null;
+    public void trouverCheminMaxMentions(String artiste1, String artiste2){
+
+
     }
 }
