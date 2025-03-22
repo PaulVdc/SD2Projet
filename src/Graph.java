@@ -83,15 +83,19 @@ public class Graph {
 
         fileSommets.add(start);
         visited.add(start);
-        if(mentions.containsKey(start.getId_artist())){
+        /*if(mentions.containsKey(start.getId_artist())){
             fileSommets.add(mentions.get(start.getId_artist()).getArtiste_mentionne());
             System.out.println(fileSommets.toString());
 
-        }
+        }*/
+        
         for (Artist artist : artistsMentionnes.get(start)) {
             visited.add(artist);
             fileSommets.add(artist);
             trouverCheminLePlusCourt(artist.getNom_artist(),artiste2);
+            for (Artist artist1 : visited) {
+                
+            }
         }
         
     }
