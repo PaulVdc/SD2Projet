@@ -8,20 +8,17 @@ public class Graph {
 
     private  Map<Integer, Artist> artistsIds;// retient tout les artistes
     private  Map<String, Artist> artists;// retient tout les artistes avec le nom comme clé// retient tout les artistes par leur nom
-    private  Map<Integer, Mention> mentions;//TODO à retirer ??
     private  Map<Artist, Set<Mention>> mentionsDunArtiste;//Liste d'adjacence
     private  Map<Artist, Set<Artist>> artistsMentionnes;//Liste d'adjacence
-
 
 
     public Graph(String artistsFile, String mentionsFile) {
         this.artists = new HashMap<>();
         this.artistsIds = new HashMap<>();
-        this.mentions = new HashMap<>();
         this.artistsMentionnes = new HashMap<>();
         this.mentionsDunArtiste = new HashMap<>();
 
-
+        //Lecture des artistes dans artistsFile
         try(BufferedReader br = new BufferedReader(new FileReader(artistsFile))){
             String ligne;
             while ((ligne = br.readLine()) != null) {
@@ -45,6 +42,7 @@ public class Graph {
             e.printStackTrace();
         }
 
+        //Lecture des mentions dans mentionsFile
         try(BufferedReader br = new BufferedReader(new FileReader(mentionsFile))){
             String ligne;
             while ((ligne = br.readLine()) != null) {
@@ -60,7 +58,6 @@ public class Graph {
                     // Création de l'objet Mention
                     Mention mention = new Mention(mentionneur, mentionnee, nb_mention);
                     //System.out.println(mention);
-                    this.mentions.put(mentionneur.getId_artist(),mention);
                     this.artistsMentionnes.putIfAbsent(mentionneur, new HashSet<Artist>());
                     this.artistsMentionnes.get(mentionneur).add(mentionnee);
                     this.mentionsDunArtiste.get(mentionneur).add(mention);
@@ -69,26 +66,23 @@ public class Graph {
         } catch (IOException e){
             e.printStackTrace();
         }
+
     }//End of constructor
 
-    //methodes
     public void trouverCheminLePlusCourt(String artiste1, String artiste2) {
         Artist start = this.artists.get(artiste1);
         Artist end = this.artists.get(artiste2);
         Artist artisteCourant = start;
-        // debug System.out.println("start = "+start);
+
         Queue<Artist> fileSommetsPasEncoreAtteints = new LinkedList<>();
         Set<Artist> visited = new HashSet<>();
 
         // Créer une 3ème structure pour retenir d'ou les sommets viennent ( Faire une map <Artiste_Mentionné,Mentions> )
-        Map<Artist, Artist> predecesseurs = new HashMap<>(); //Artist2 == prédécesseur
         Map<Artist, Mention> provenence = new HashMap<>(); //artiste mentionné, mention
 
         fileSommetsPasEncoreAtteints.add(start);
         visited.add(start);
-        predecesseurs.put(start, null); //le premier artiste n'a pas de prédécésseur
         provenence.put(start, null);
-
 
         while(!artisteCourant.equals(end)) {
             // je oprend  le premier de la fileet je l'enleve et il devient mon courant
@@ -96,36 +90,23 @@ public class Graph {
             //debug System.out.println("artisteCourant : "+artisteCourant);
 
             if (artisteCourant.equals(end)){
-                reconstruirChemin(predecesseurs, provenence, end);
+                reconstruirChemin(provenence, end);
             }
-
-            /*
-            for (Artist artist : artistsMentionnes.get(artisteCourant)) {
-                if(!visited.contains(artist)){
-                    visited.add(artist); //Ajout des artistes mentionnés par le courant dans le Set des visited
-                    fileSommetsPasEncoreAtteints.add(artist); //Ajout des artistes mentionnés par le courant dans la file des sommets
-                    predecesseurs.put(artist, artisteCourant);
-                }
-            }
-            */
 
             for (Mention m : mentionsDunArtiste.get(artisteCourant)) {
                 if(!visited.contains(m.getArtiste_mentionne())){
                     visited.add(m.getArtiste_mentionne()); //Ajout des artistes mentionnés par le courant dans le Set des visited
                     fileSommetsPasEncoreAtteints.add(m.getArtiste_mentionne()); //Ajout des artistes mentionnés par le courant dans la file des sommets
-                    predecesseurs.put(m.getArtiste_mentionne(), artisteCourant);
                     provenence.put(m.getArtiste_mentionne(), m);
                 }
             }
         }
-    }
+    }//End of trouverCheminLePlusCourt
 
-    private void reconstruirChemin(Map<Artist, Artist> predecesseurs, Map<Artist, Mention> provenence, Artist end){
+    private void reconstruirChemin(Map<Artist, Mention> provenence, Artist end){
         List<Artist> chemin = new ArrayList<>();
         Artist artisteCourant = end;
         double coutTotal = 0;
-
-        //debug System.out.println("provenence.get(artisteCourant).getNb_mentions() : " + provenence.get(artisteCourant).getNb_mentions());
 
         while (artisteCourant != null){
             chemin.add(artisteCourant);
@@ -134,12 +115,18 @@ public class Graph {
                 //debug System.out.println("provenence.get(artisteCourant).getNb_mentions() : " + provenence.get(artisteCourant).getNb_mentions());
                 coutTotal += provenence.get(artisteCourant).getNb_mentions();
             }
-            artisteCourant = predecesseurs.get(artisteCourant); // pour remonter dans les prédécesseurs et faire le chemin à l'envers
+
+            Mention m = provenence.get(artisteCourant) ;
+            if (m!=null){
+                artisteCourant = m.getArtiste_mentionneur();
+            } else {
+                artisteCourant = null ;
+            }
         }
 
         Collections.reverse(chemin); //pour inverser l'ordre du chemin
 
-        int logueurDuChemin = chemin.size()-1;
+        int logueurDuChemin = chemin.size()-1;//-1 car le premier n'est pas compté
         System.out.println("Longueur du chemin : " + logueurDuChemin);
         System.out.println("Coût total du chemin : " + coutTotal);
         System.out.println("Chemain :");
@@ -147,10 +134,10 @@ public class Graph {
         for (Artist artist : chemin) {
             System.out.println(artist.getNom_artist() + " (" + artist.getCategorie() + ")");
         }
-    }
+    }//End of reconstruirChemin
 
     public void trouverCheminMaxMentions(String artiste1, String artiste2){
 
 
-    }
+    }//End of trouverCheminMaxMentions
 }
