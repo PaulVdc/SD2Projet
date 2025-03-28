@@ -6,12 +6,12 @@ import java.util.*;
 public class Graph {
 
     private  Map<Integer, Artist> artistsIds;// retient tout les artistes avec leur id comme clé
-    private  Map<String, Artist> artists;// retient tout les artistes avec le nom comme clé
+    private  Map<String, Artist> artistsNames;// retient tout les artistes avec le nom comme clé
     private  Map<Artist, Set<Mention>> mentionsDunArtiste;//Liste d'adjacence
 
 
     public Graph(String artistsFile, String mentionsFile) {
-        this.artists = new HashMap<>();
+        this.artistsNames = new HashMap<>();
         this.artistsIds = new HashMap<>();
         this.mentionsDunArtiste = new HashMap<>();
 
@@ -29,7 +29,7 @@ public class Graph {
                     Artist artiste = new Artist(id, nom, categorie);
 
                     this.artistsIds.put(artiste.getId_artist(), artiste);
-                    this.artists.put(artiste.getNom_artist(), artiste);
+                    this.artistsNames.put(artiste.getNom_artist(), artiste);
                     this.mentionsDunArtiste.put(artiste, new HashSet<>());
                 }
             }
@@ -64,8 +64,8 @@ public class Graph {
     }//End of constructor
 
     public void trouverCheminLePlusCourt(String artiste1, String artiste2) {
-        Artist start = this.artists.get(artiste1);
-        Artist end = this.artists.get(artiste2);
+        Artist start = this.artistsNames.get(artiste1);
+        Artist end = this.artistsNames.get(artiste2);
 
         Artist artisteCourant = start;
 
@@ -83,6 +83,7 @@ public class Graph {
         //algo BFS
         while(!artisteCourant.equals(end)) {
 
+            //si file vide avant d'atteindre l'artiste end, alors pas de chemin entre start et end
             if (fileSommetsPasEncoreAtteints.isEmpty()){
                 throw new RuntimeException("Aucun chemin entre " + start.getNom_artist() + " et " + end.getNom_artist());
             }
@@ -92,7 +93,7 @@ public class Graph {
 
             //fin du BFS quand le courant == end
             if (artisteCourant.equals(end)){
-                reconstruirChemin(provenences, end);
+                reconstruireChemin(provenences, end);
             }
 
             //parcourir le set des mentions de l'artiste courant
@@ -107,8 +108,8 @@ public class Graph {
     }//End of trouverCheminLePlusCourt*/
 
     public void trouverCheminMaxMentions(String artiste1, String artiste2){
-        Artist start = this.artists.get(artiste1);
-        Artist end = this.artists.get(artiste2);
+        Artist start = this.artistsNames.get(artiste1);
+        Artist end = this.artistsNames.get(artiste2);
 
         //retient le cout minimal pour atteindre chaque artiste
         Map<Artist, Double> etiquetteProvisoire = new HashMap<>();
@@ -140,7 +141,7 @@ public class Graph {
             etiquetteProvisoire.remove(artisteCourrant);
 
             if (artisteCourrant.equals(end)){
-                reconstruirChemin(provenences, end);
+                reconstruireChemin(provenences, end);
                 cheminTrouve = true;
                 break;
             }
@@ -174,7 +175,7 @@ public class Graph {
 
     }//End of trouverCheminMaxMentions
 
-    private void reconstruirChemin(Map<Artist, Mention> provenences, Artist end){
+    private void reconstruireChemin(Map<Artist, Mention> provenences, Artist end){
         List<Artist> chemin = new ArrayList<>();
         Artist artisteCourant = end;
         double coutTotal = 0;
@@ -206,6 +207,6 @@ public class Graph {
         for (Artist artist : chemin) {
             System.out.println(artist.getNom_artist() + " (" + artist.getCategorie() + ")");
         }
-    }//End of reconstruirChemin
+    }//End of reconstruireChemin
 
 }//End of Class Graph
