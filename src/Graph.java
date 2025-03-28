@@ -28,11 +28,9 @@ public class Graph {
                     // Création de l'objet Artist
                     Artist artiste = new Artist(id, nom, categorie);
 
-                    //System.out.println(artiste); //Pour verifier si l'ajout s'est bien passé
                     this.artistsIds.put(artiste.getId_artist(), artiste);
                     this.artists.put(artiste.getNom_artist(), artiste);
-                    //this.artistsMentionnes.put(artiste,new HashSet<Artist>()) ;
-                    this.mentionsDunArtiste.put(artiste, new HashSet<Mention>());
+                    this.mentionsDunArtiste.put(artiste, new HashSet<>());
                 }
             }
         } catch (IOException e){
@@ -54,9 +52,8 @@ public class Graph {
 
                     // Création de l'objet Mention
                     Mention mention = new Mention(mentionneur, mentionnee, nb_mention);
-                    //System.out.println(mention);
-                    //this.artistsMentionnes.putIfAbsent(mentionneur, new HashSet<Artist>());
-                    //this.artistsMentionnes.get(mentionneur).add(mentionnee);
+
+                    //ajout de la mention au Set de mentions de l'artiste mentionneur dans mentionsDunArtiste
                     this.mentionsDunArtiste.get(mentionneur).add(mention);
                 }
             }
@@ -69,71 +66,45 @@ public class Graph {
     public void trouverCheminLePlusCourt(String artiste1, String artiste2) {
         Artist start = this.artists.get(artiste1);
         Artist end = this.artists.get(artiste2);
+
         Artist artisteCourant = start;
 
         Queue<Artist> fileSommetsPasEncoreAtteints = new LinkedList<>();
         Set<Artist> visited = new HashSet<>();
 
-        // Créer une 3ème structure pour retenir d'ou les sommets viennent ( Faire une map <Artiste_Mentionné,Mentions> )
-        Map<Artist, Mention> provenence = new HashMap<>(); //artiste mentionné, mention
+        //retient d'où viennet les sommets
+        Map<Artist, Mention> provenences = new HashMap<>(); //artiste mentionné, mention
 
+        //ajout de start dans les 3 SD
         fileSommetsPasEncoreAtteints.add(start);
         visited.add(start);
-        provenence.put(start, null);
+        provenences.put(start, null);
 
+        //algo BFS
         while(!artisteCourant.equals(end)) {
-            // je prend  le premier de la file et je l'enleve et il devient mon courant
+
+            if (fileSommetsPasEncoreAtteints.isEmpty()){
+                throw new RuntimeException("Aucun chemin entre " + start.getNom_artist() + " et " + end.getNom_artist());
+            }
+
+            // j'enleve le premier de la file et il devient le courant
             artisteCourant = fileSommetsPasEncoreAtteints.poll();
 
-            if (provenence.size()<2){
-                throw new RuntimeException("Aucun chemin entre " + start + " et " + end);
-            }
+            //fin du BFS quand le courant == end
             if (artisteCourant.equals(end)){
-                reconstruirChemin(provenence, end);
+                reconstruirChemin(provenences, end);
             }
 
+            //parcourir le set des mentions de l'artiste courant
             for (Mention m : mentionsDunArtiste.get(artisteCourant)) {
                 if(!visited.contains(m.getArtiste_mentionne())){
                     visited.add(m.getArtiste_mentionne()); //Ajout des artistes mentionnés par le courant dans le Set des visited
                     fileSommetsPasEncoreAtteints.add(m.getArtiste_mentionne()); //Ajout des artistes mentionnés par le courant dans la file des sommets
-                    provenence.put(m.getArtiste_mentionne(), m);
+                    provenences.put(m.getArtiste_mentionne(), m);
                 }
             }
         }
     }//End of trouverCheminLePlusCourt*/
-
-    private void reconstruirChemin(Map<Artist, Mention> provenence, Artist end){
-        List<Artist> chemin = new ArrayList<>();
-        Artist artisteCourant = end;
-        double coutTotal = 0;
-
-        while (artisteCourant != null){
-            chemin.add(artisteCourant);
-
-            if (provenence.get(artisteCourant)!=null){
-                //debug System.out.println("provenence.get(artisteCourant).getNb_mentions() : " + provenence.get(artisteCourant).getNb_mentions());
-                coutTotal += provenence.get(artisteCourant).getNb_mentions();
-            }
-
-            Mention m = provenence.get(artisteCourant) ;
-            if (m!=null){
-                artisteCourant = m.getArtiste_mentionneur();
-            } else {
-                artisteCourant = null ;
-            }
-        }
-
-        Collections.reverse(chemin); //pour inverser l'ordre du chemin
-
-        int logueurDuChemin = chemin.size()-1;//-1 car le premier n'est pas compté
-        System.out.println("Longueur du chemin : " + logueurDuChemin);
-        System.out.println("Coût total du chemin : " + coutTotal);
-        System.out.println("Chemain :");
-
-        for (Artist artist : chemin) {
-            System.out.println(artist.getNom_artist() + " (" + artist.getCategorie() + ")");
-        }
-    }//End of reconstruirChemin
 
     public void trouverCheminMaxMentions(String artiste1, String artiste2){
         Artist start = this.artists.get(artiste1);
@@ -144,16 +115,18 @@ public class Graph {
         Map<Artist, Double> etiquetteDefinitive = new HashMap<>();
 
         //retient d'ou viennent chaque artiste
-        Map<Artist, Mention> provenence = new HashMap<>(); //artiste mentionné, mention
+        Map<Artist, Mention> provenences = new HashMap<>(); //artiste mentionné, mention
+
+        boolean cheminTrouve = false;//util pour gérer les cas où aucun chemin n'est trouvé
 
         etiquetteProvisoire.put(start, 0.0);
 
-        Artist artisteCourrant=null;
+        Artist artisteCourrant = null;
 
         //algo de Dijkstra
         while (!etiquetteProvisoire.isEmpty()){
 
-
+            //cherche l'artiste avec le cout minimal
             Double coutMin = Double.MAX_VALUE;
             for (Artist a : etiquetteProvisoire.keySet()) {
                 if (etiquetteProvisoire.get(a)<coutMin){
@@ -162,36 +135,77 @@ public class Graph {
                 }
             }
 
-            //ajout de artiste courrant dans etiquette prov avec cout
+            //ajoute artiste courrant dans etiquette definitive avec cout ( cout : etiquetteProvisoire.get(artisteCourrant) )
             etiquetteDefinitive.put(artisteCourrant, etiquetteProvisoire.get(artisteCourrant));
             etiquetteProvisoire.remove(artisteCourrant);
 
-            if (provenence.size()<2){
-                throw new RuntimeException("Aucun chemin entre " + start + " et " + end);
-            }
             if (artisteCourrant.equals(end)){
-                reconstruirChemin(provenence, end);
+                reconstruirChemin(provenences, end);
+                cheminTrouve = true;
+                break;
             }
 
+            //parcourir le set des mentions de l'artiste courant
             for (Mention m : this.mentionsDunArtiste.get(artisteCourrant)) {
-               Artist artisteMentionne = m.getArtiste_mentionne();
+                Artist artisteMentionne = m.getArtiste_mentionne();
                 Double nouveauCout = etiquetteDefinitive.get(artisteCourrant) + m.getNb_mentions();
+
                 if (!etiquetteDefinitive.keySet().contains(artisteMentionne)){
                     if (!etiquetteProvisoire.keySet().contains(artisteMentionne)){
+                        //ajout de l'artiste mentionné dans l'étiquette prov s'il n'est ni dans la prov, ni dans la definitive
                         etiquetteProvisoire.put(artisteMentionne, nouveauCout);
-                        provenence.put(artisteMentionne, m);
+                        provenences.put(artisteMentionne, m);
                     }
 
                     if (etiquetteProvisoire.keySet().contains(artisteMentionne)){
-
                         if (etiquetteProvisoire.get(artisteMentionne)>nouveauCout){
+                            //modif du cout de l'artisteMentionne dans etiquetteProvisoire si nouveauCout inférieur à l'ancien
                             etiquetteProvisoire.put(artisteMentionne, nouveauCout);
-                            provenence.put(artisteMentionne, m);
+                            provenences.put(artisteMentionne, m);
                         }
                     }
                 }
             }
+        }//End of while
+
+        if (!cheminTrouve){
+            throw new RuntimeException("Aucun chemin entre " + start.getNom_artist() + " et " + end.getNom_artist());
         }
 
     }//End of trouverCheminMaxMentions
-}
+
+    private void reconstruirChemin(Map<Artist, Mention> provenences, Artist end){
+        List<Artist> chemin = new ArrayList<>();
+        Artist artisteCourant = end;
+        double coutTotal = 0;
+
+        while (artisteCourant != null){
+            chemin.add(artisteCourant);
+
+            if (provenences.get(artisteCourant)!=null){
+                //debug System.out.println("provenence.get(artisteCourant).getNb_mentions() : " + provenence.get(artisteCourant).getNb_mentions());
+                coutTotal += provenences.get(artisteCourant).getNb_mentions();//recup le cout dans la mention
+            }
+
+            Mention m = provenences.get(artisteCourant) ;
+            if (m!=null){
+                artisteCourant = m.getArtiste_mentionneur();
+            } else {
+                artisteCourant = null ;
+            }
+        }
+
+        Collections.reverse(chemin); //pour inverser l'ordre du chemin
+
+        int logueurDuChemin = chemin.size()-1;//-1 car le premier n'est pas compté
+
+        System.out.println("Longueur du chemin : " + logueurDuChemin);
+        System.out.println("Coût total du chemin : " + coutTotal);
+        System.out.println("Chemain :");
+
+        for (Artist artist : chemin) {
+            System.out.println(artist.getNom_artist() + " (" + artist.getCategorie() + ")");
+        }
+    }//End of reconstruirChemin
+
+}//End of Class Graph
