@@ -9,7 +9,7 @@ public class Graph {
     private  Map<Integer, Artist> artistsIds;// retient tout les artistes
     private  Map<String, Artist> artists;// retient tout les artistes avec le nom comme clé// retient tout les artistes par leur nom
     private  Map<Artist, Set<Mention>> mentionsDunArtiste;//Liste d'adjacence
-    private  Map<Artist, Set<Artist>> artistsMentionnes;//Liste d'adjacence
+    private  Map<Artist, Set<Artist>> artistsMentionnes;//Liste d'adjacence //TODO a retirer ?
 
 
     public Graph(String artistsFile, String mentionsFile) {
@@ -137,7 +137,72 @@ public class Graph {
     }//End of reconstruirChemin
 
     public void trouverCheminMaxMentions(String artiste1, String artiste2){
+        Artist start = this.artists.get(artiste1);
+        Artist end = this.artists.get(artiste2);
 
+        //retient le cout minimal pour atteindre chaque artiste
+        Map<Artist, Double> etiquetteProvisoire = new HashMap<>();
+        Map<Artist, Double> etiquetteDefinitive = new HashMap<>();
+
+        //TODO choisir un des deux entre TreeSet et TreeMap
+        //TODO créer un Comparator pour personnaliser l'ordre de tri
+        //TreeSet<Artist> arbreBinaireArtistes = new TreeSet<>();//ordonné selon le cout min par artiste
+        //TreeMap<Artist, Double> arbreBinaireCouts = new TreeMap<>();//key : Artist, value : cout
+
+        //retient d'ou viennent chaque artiste
+        Map<Artist, Mention> provenence = new HashMap<>(); //artiste mentionné, mention
+
+
+
+        etiquetteProvisoire.put(start, 0.0);
+        //arbreBinaireCouts.put(start, 0.0);
+
+        //ajout des couts par artiste (depuis l'artiste start) à etiquetteProvisoire
+        /*for (Mention m : this.mentionsDunArtiste.get(start)) {
+            etiquetteProvisoire.put(m.getArtiste_mentionne(), m.getNb_mentions());
+        }*/
+        Artist artisteCourrant=null;
+        //algo de Dijkstra
+        //TODO
+        while (!etiquetteProvisoire.isEmpty()){
+
+
+            Double coutMin = Double.MAX_VALUE;
+            for (Artist a : etiquetteProvisoire.keySet()) {
+                if (etiquetteProvisoire.get(a)<coutMin){
+                    coutMin = etiquetteProvisoire.get(a);
+                    artisteCourrant = a;
+                }
+            }
+
+            //ajout de artiste courrant dans etiquette prov avec cout
+            etiquetteDefinitive.put(artisteCourrant, etiquetteProvisoire.get(artisteCourrant));
+            etiquetteProvisoire.remove(artisteCourrant);
+
+
+            if (artisteCourrant.equals(end)){
+                reconstruirChemin(provenence, end);
+            }
+
+            for (Mention m : this.mentionsDunArtiste.get(artisteCourrant)) {
+               Artist artisteMentionne = m.getArtiste_mentionne();
+                Double nouveauCout = etiquetteDefinitive.get(artisteCourrant) + m.getNb_mentions();
+                if (!etiquetteDefinitive.keySet().contains(artisteMentionne)){
+                    if (!etiquetteProvisoire.keySet().contains(artisteMentionne)){
+                        etiquetteProvisoire.put(artisteMentionne, nouveauCout);
+                        provenence.put(artisteMentionne, m);
+                    }
+
+                    if (etiquetteProvisoire.keySet().contains(artisteMentionne)){
+
+                        if (etiquetteProvisoire.get(artisteMentionne)>nouveauCout){
+                            etiquetteProvisoire.put(artisteMentionne, nouveauCout);
+                            provenence.put(artisteMentionne, m);
+                        }
+                    }
+                }
+            }
+        }
 
     }//End of trouverCheminMaxMentions
 }
