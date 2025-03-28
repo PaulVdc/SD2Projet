@@ -1,21 +1,18 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.SQLOutput;
 import java.util.*;
 
 public class Graph {
 
-    private  Map<Integer, Artist> artistsIds;// retient tout les artistes
-    private  Map<String, Artist> artists;// retient tout les artistes avec le nom comme clé// retient tout les artistes par leur nom
+    private  Map<Integer, Artist> artistsIds;// retient tout les artistes avec leur id comme clé
+    private  Map<String, Artist> artists;// retient tout les artistes avec le nom comme clé
     private  Map<Artist, Set<Mention>> mentionsDunArtiste;//Liste d'adjacence
-    private  Map<Artist, Set<Artist>> artistsMentionnes;//Liste d'adjacence //TODO a retirer ?
 
 
     public Graph(String artistsFile, String mentionsFile) {
         this.artists = new HashMap<>();
         this.artistsIds = new HashMap<>();
-        this.artistsMentionnes = new HashMap<>();
         this.mentionsDunArtiste = new HashMap<>();
 
         //Lecture des artistes dans artistsFile
@@ -34,7 +31,7 @@ public class Graph {
                     //System.out.println(artiste); //Pour verifier si l'ajout s'est bien passé
                     this.artistsIds.put(artiste.getId_artist(), artiste);
                     this.artists.put(artiste.getNom_artist(), artiste);
-                    this.artistsMentionnes.put(artiste,new HashSet<Artist>()) ;
+                    //this.artistsMentionnes.put(artiste,new HashSet<Artist>()) ;
                     this.mentionsDunArtiste.put(artiste, new HashSet<Mention>());
                 }
             }
@@ -58,8 +55,8 @@ public class Graph {
                     // Création de l'objet Mention
                     Mention mention = new Mention(mentionneur, mentionnee, nb_mention);
                     //System.out.println(mention);
-                    this.artistsMentionnes.putIfAbsent(mentionneur, new HashSet<Artist>());
-                    this.artistsMentionnes.get(mentionneur).add(mentionnee);
+                    //this.artistsMentionnes.putIfAbsent(mentionneur, new HashSet<Artist>());
+                    //this.artistsMentionnes.get(mentionneur).add(mentionnee);
                     this.mentionsDunArtiste.get(mentionneur).add(mention);
                 }
             }
@@ -85,10 +82,12 @@ public class Graph {
         provenence.put(start, null);
 
         while(!artisteCourant.equals(end)) {
-            // je oprend  le premier de la fileet je l'enleve et il devient mon courant
+            // je prend  le premier de la file et je l'enleve et il devient mon courant
             artisteCourant = fileSommetsPasEncoreAtteints.poll();
-            //debug System.out.println("artisteCourant : "+artisteCourant);
 
+            if (provenence.size()<2){
+                throw new RuntimeException("Aucun chemin entre " + start + " et " + end);
+            }
             if (artisteCourant.equals(end)){
                 reconstruirChemin(provenence, end);
             }
@@ -101,7 +100,7 @@ public class Graph {
                 }
             }
         }
-    }//End of trouverCheminLePlusCourt
+    }//End of trouverCheminLePlusCourt*/
 
     private void reconstruirChemin(Map<Artist, Mention> provenence, Artist end){
         List<Artist> chemin = new ArrayList<>();
@@ -144,26 +143,14 @@ public class Graph {
         Map<Artist, Double> etiquetteProvisoire = new HashMap<>();
         Map<Artist, Double> etiquetteDefinitive = new HashMap<>();
 
-        //TODO choisir un des deux entre TreeSet et TreeMap
-        //TODO créer un Comparator pour personnaliser l'ordre de tri
-        //TreeSet<Artist> arbreBinaireArtistes = new TreeSet<>();//ordonné selon le cout min par artiste
-        //TreeMap<Artist, Double> arbreBinaireCouts = new TreeMap<>();//key : Artist, value : cout
-
         //retient d'ou viennent chaque artiste
         Map<Artist, Mention> provenence = new HashMap<>(); //artiste mentionné, mention
 
-
-
         etiquetteProvisoire.put(start, 0.0);
-        //arbreBinaireCouts.put(start, 0.0);
 
-        //ajout des couts par artiste (depuis l'artiste start) à etiquetteProvisoire
-        /*for (Mention m : this.mentionsDunArtiste.get(start)) {
-            etiquetteProvisoire.put(m.getArtiste_mentionne(), m.getNb_mentions());
-        }*/
         Artist artisteCourrant=null;
+
         //algo de Dijkstra
-        //TODO
         while (!etiquetteProvisoire.isEmpty()){
 
 
@@ -179,7 +166,9 @@ public class Graph {
             etiquetteDefinitive.put(artisteCourrant, etiquetteProvisoire.get(artisteCourrant));
             etiquetteProvisoire.remove(artisteCourrant);
 
-
+            if (provenence.size()<2){
+                throw new RuntimeException("Aucun chemin entre " + start + " et " + end);
+            }
             if (artisteCourrant.equals(end)){
                 reconstruirChemin(provenence, end);
             }

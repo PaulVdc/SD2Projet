@@ -42,11 +42,4 @@ public class Artist {
                 ", categorie='" + categorie + '\'' +
                 '}';
     }
-
-    /*
-    public static void main(String[] args) {
-        Artist a1 = new Artist(1, "Még Artist", "us_rap");
-        System.out.println(a1);
-    }
-    */
 }
